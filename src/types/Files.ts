@@ -1,18 +1,3 @@
-export interface FileURLResponse extends FileUrlQueryParamsResponse {
-  relativePath: string;
-}
-
-export interface FileUrlQueryParamsResponse {
-  queryParams: {
-    temp_url_sig: string;
-    temp_url_expires: string;
-  };
-}
-export interface FileStorageResponse {
-  data: ArrayBuffer;
-  filename: string;
-}
-
 export enum FileTypeApi {
   PNG = 'PNG',
   JPEG = 'JPEG',

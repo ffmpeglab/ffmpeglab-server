@@ -1,0 +1,10 @@
+import { config } from 'src/config';
+import { Media } from 'src/types';
+
+export const processFileName = (filename: string) =>
+  filename?.replace(/[^a-zA-Z0-9_.-]/g, '') || '';
+
+export const getFileId = (media: Media) =>
+  `${media.id}_${processFileName(media.filename || media.title)}`;
+
+export const documentDir = () => config.documentDir;

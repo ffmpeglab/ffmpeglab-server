@@ -3,8 +3,8 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Render {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
   title: string;
@@ -14,6 +14,18 @@ export class Render {
 
   @Column()
   status: string;
+
+  @Column()
+  public: boolean;
+
+  @Column({ type: 'uuid' })
+  user_id: string;
+
+  @Column()
+  progress: number;
+
+  @Column()
+  logs: string;
 
   @Column('simple-json')
   data: RenderData;
