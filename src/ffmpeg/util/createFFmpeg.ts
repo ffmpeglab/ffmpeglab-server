@@ -14,10 +14,11 @@ export const createFFmpeg = async (
   logsCB?: LogsProgressCallback,
 ) => {
   const ffmpeg = {
-    exec: async (cmd: string[]) => {
+    exec: async (cmd: string[], env: {[key:string]:{}}) => {
       await new Promise((resolve) => {
         console.info('exec native ffmpeg', ffmpegPath, cmd);
-        const child = spawn(ffmpegPath, cmd);
+        
+        const child = spawn(ffmpegPath, cmd, {env});
         child.stdout.on('data', (data: Buffer) => {
           console.error('native ffmpeg logs', data.toString('utf-8'));
           logsCB && logsCB(data.toString('utf-8'));

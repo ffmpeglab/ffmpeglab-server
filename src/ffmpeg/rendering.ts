@@ -47,12 +47,7 @@ export const execEncode = async (cmd: {
       cmd.projectData.editor.selectedCode === CodeSelection.generated
         ? cmd.execCmd
         : processUserCode(cmd.projectData.editor.code);
-    const envCode = Object.keys(cmd.assignedMedias).map(
-      (mkey) => `export ${mkey.replace('$', '')}=${cmd.assignedMedias[mkey]}`,
-    );
-    const fullCode = envCode.concat(execCode);
-    console.info({ fullCode });
-    const exec = cmd.ffmpeg.exec(fullCode);
+    const exec = cmd.ffmpeg.exec(execCode, cmd.assignedMedias);
     console.info('processing', exec);
     await exec;
     console.info('after exec', exec, outFileId);
