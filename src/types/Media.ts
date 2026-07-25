@@ -97,10 +97,9 @@ export class EditorProjectConfiguration {
   output: FFMpegOutputType;
   @ApiProperty()
   code?: string;
-  @ApiProperty({enum: CodeSelection})
+  @ApiProperty({ enum: CodeSelection })
   selectedCode?: CodeSelection;
 }
-
 
 export class EditorProject extends Folder {
   @ApiProperty()

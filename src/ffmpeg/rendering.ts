@@ -93,7 +93,7 @@ export const encodeProject = async (
       const progress2 = parseFloat(
         ((time - totalTime) / totalTimePercent / 10000).toFixed(2),
       );
-      cb({ time, progress });
+      cb({ time, progress: progress2 });
     }, logs);
     cmd.files = files;
     const nmedia: MinimalMedia = {

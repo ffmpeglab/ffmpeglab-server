@@ -167,6 +167,6 @@ export const qualityToSize = {
 };
 
 export enum CodeSelection {
-  generated = "generated",
-  custom = "custom",
+  generated = 'generated',
+  custom = 'custom',
 }

@@ -13,6 +13,8 @@ export const config = {
   },
   queue: {
     name: process.env.RENDER_QUEUE as string,
+    logs: 'render_logs',
+    file: 'render_file',
     isRunner: process.env.IS_QUEUE_RUNNER === 'true' ? true : false,
   },
   ffmpeg: {
