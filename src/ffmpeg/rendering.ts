@@ -48,7 +48,7 @@ export const execEncode = async (cmd: {
         ? cmd.execCmd
         : processUserCode(cmd.projectData.editor.code);
     const envCode = Object.keys(cmd.assignedMedias).map(
-      (mkey) => `export ${mkey}=${cmd.assignedMedias[mkey]}`,
+      (mkey) => `export ${mkey.replace('$', '')}=${cmd.assignedMedias[mkey]}`,
     );
     const fullCode = envCode.concat(execCode);
     console.info({ fullCode });

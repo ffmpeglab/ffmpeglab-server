@@ -165,3 +165,8 @@ export const qualityToSize = {
   SD: { width: 854, height: 480 },
   LOW: { width: 640, height: 360 },
 };
+
+export enum CodeSelection {
+  generated = "generated",
+  custom = "custom",
+}

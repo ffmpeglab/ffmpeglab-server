@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Folder } from './Folder';
 export * from './MediaUtils';
 import {
+  CodeSelection,
   FFMpegOutputType,
   FFMpegPreset,
   PositionParams,
@@ -96,14 +97,10 @@ export class EditorProjectConfiguration {
   output: FFMpegOutputType;
   @ApiProperty()
   code?: string;
-  @ApiProperty()
+  @ApiProperty({enum: CodeSelection})
   selectedCode?: CodeSelection;
 }
 
-export enum CodeSelection {
-  custom,
-  generated,
-}
 
 export class EditorProject extends Folder {
   @ApiProperty()
