@@ -1,5 +1,5 @@
-import { config } from 'src/config';
-import { Media } from 'src/types';
+import { config } from '../../config';
+import { Media } from '../../types';
 
 export const processFileName = (filename: string) =>
   filename?.replace(/[^a-zA-Z0-9_.-]/g, '') || '';

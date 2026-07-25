@@ -11,9 +11,9 @@ import {
 
 import { RendersService } from './renders.service';
 import { RenderDto, RunDto } from './renders.dto';
-import { ApiBearerAuth, ApiParam, ApiResponse } from '@nestjs/swagger';
-import { RenderResponse } from 'src/types';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { RenderResponse } from '../types';
+import { AuthGuard } from '../auth/auth.guard';
 
 @UseGuards(AuthGuard)
 @Controller('renders')

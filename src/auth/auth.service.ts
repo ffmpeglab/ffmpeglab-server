@@ -1,8 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-// import { UsersService } from '../users/users.service';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ApiKey } from 'src/model/apikey.entity';
+import { ApiKey } from '../model/apikey.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()

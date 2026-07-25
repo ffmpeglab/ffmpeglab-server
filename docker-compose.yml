@@ -1,0 +1,17 @@
+services:
+  ffmpeglab-server:
+    image: ffmpeglab/server:main
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./tmp:/tmp/ffmpeglab
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PORT=${DB_PORT}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - RENDER_QUEUE=renders
+      - IS_QUEUE_RUNNER=${IS_QUEUE_RUNNER}
+      - DOCUMENT_DIRECTORY=/tmp/ffmpeglab
+      - DB_MIGRATION_ENABLED=${DB_MIGRATION_ENABLED}

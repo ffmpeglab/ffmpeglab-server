@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import type { EditorLayer, EditorProject } from 'src/types';
+import type { EditorLayer, EditorProject } from '../types';
 
 import {
   EditorLayer as EditorLayerClass,
   EditorProject as EditorProjectClass,
-} from 'src/types';
+} from '../types';
 
 export class RenderDto {
   @ApiProperty({ type: EditorProjectClass })

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ApiKey } from 'src/model/apikey.entity';
+import { ApiKey } from '../model/apikey.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ApiKey])],

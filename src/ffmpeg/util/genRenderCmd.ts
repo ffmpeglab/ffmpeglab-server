@@ -32,7 +32,7 @@ export const genRenderCmd = (
   const genInput = (e: EncoderProject) => {
     fileCounter++;
     const assignedMedia = `$MEDIA_${fileCounter}`;
-    const mediaFile = `"${documentDir().replace('file://', '')}${e.folderId}/${
+    const mediaFile = `"${documentDir().replace('file://', '')}/${e.folderId}/${
       e.isCopy || e.id
     }_${processFileName(e.filename)}"`;
     assignedMedias[assignedMedia] = mediaFile;

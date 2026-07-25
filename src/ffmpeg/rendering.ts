@@ -35,7 +35,7 @@ export const execEncode = async (cmd: {
   assignedMedias: { [key: string]: string };
 }): Promise<string> => {
   try {
-    fs.mkdirSync(documentDir() + cmd.projectData.id, {
+    fs.mkdirSync(`${documentDir()}/${cmd.projectData.id}`, {
       recursive: true,
     });
   } catch (err) {
@@ -56,7 +56,7 @@ export const execEncode = async (cmd: {
     console.info('processing', exec);
     await exec;
     console.info('after exec', exec, outFileId);
-    const url = `${documentDir()}${cmd.outFileId}`;
+    const url = `${documentDir()}/${cmd.outFileId}`;
     cmd.mediaOut.filePath = url;
     const stats = await fs.statSync(cmd.mediaOut.filePath);
     cmd.mediaOut.size = stats?.size;

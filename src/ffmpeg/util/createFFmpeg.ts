@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { execToMilliseconds } from './genExecTime';
 import fs from 'node:fs';
-import { config } from 'src/config';
+import { config } from '../../config';
 
 export type CBProgressParams = { progress: number; time: number };
 export type CBProgressCallback = (progress: CBProgressParams) => void;

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import http from 'http';
-import { EncoderProject } from 'src/types';
+import { EncoderProject } from '../../types';
 import { documentDir, getFileId } from './util';
 const downloadFile = async ({ filePath, dirPath, url }) =>
   new Promise((res) => {

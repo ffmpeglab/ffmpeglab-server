@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { InjectQueue, PgmqQueue } from 'nestjs-pgmq';
 import { Repository } from 'typeorm';
 import { Render } from '../model/render.entity';
-import { RenderData } from 'src/types';
-import { config } from 'src/config';
+import { RenderData } from '../types';
+import { config } from '../config';
 
 @Injectable()
 export class RendersService {

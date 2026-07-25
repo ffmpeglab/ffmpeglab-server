@@ -3,10 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RendersService } from './renders.service';
 import { RendersController } from './renders.controller';
 import { Render } from '../model/render.entity';
-import { config } from 'src/config';
+import { config } from '../config';
 import { RenderProcessor } from './renders.processor';
-import { AuthService } from 'src/auth/auth.service';
-import { ApiKey } from 'src/model/apikey.entity';
+import { AuthService } from '../auth/auth.service';
+import { ApiKey } from '../model/apikey.entity';
 
 @Module({
   imports: [

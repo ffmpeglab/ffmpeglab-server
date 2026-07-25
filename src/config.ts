@@ -19,7 +19,4 @@ export const config = {
     path: process.env.FFMPEG_PATH as string,
   },
   documentDir: process.env.DOCUMENT_DIRECTORY || '/tmp/ffmpeglab',
-  jwt: {
-    secret: process.env.JWT_SECRET || 'JWT_SECRET_123456789000__qwerty___',
-  },
 };

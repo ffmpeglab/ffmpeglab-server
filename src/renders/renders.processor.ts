@@ -1,5 +1,5 @@
 import { Processor, Process } from 'nestjs-pgmq';
-import { config } from 'src/config';
+import { config } from '../config';
 import type { PgmqJob } from 'nestjs-pgmq';
 import { RendersService } from './renders.service';
 import { encodeProject } from '../ffmpeg/rendering';

@@ -1,4 +1,4 @@
-import type { APIKeyData } from 'src/types';
+import type { APIKeyData } from '../types';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()

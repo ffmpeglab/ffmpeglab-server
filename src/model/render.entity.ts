@@ -1,4 +1,4 @@
-import type { Media, RenderData } from 'src/types';
+import type { Media, RenderData } from '../types';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
