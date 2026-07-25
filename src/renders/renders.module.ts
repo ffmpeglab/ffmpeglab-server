@@ -7,6 +7,8 @@ import { config } from '../config';
 import { RenderProcessor } from './renders.processor';
 import { AuthService } from '../auth/auth.service';
 import { ApiKey } from '../model/apikey.entity';
+import { FileProcessor } from './file.processor';
+import { LogsProcessor } from './logs.processor';
 
 @Module({
   imports: [
@@ -16,7 +18,9 @@ import { ApiKey } from '../model/apikey.entity';
   providers: [
     AuthService,
     RendersService,
-    ...(config.queue.isRunner ? [RenderProcessor] : []),
+    ...(config.queue.isLogsRunner ? [LogsProcessor] : []),
+    ...(config.queue.isFileRunner ? [FileProcessor] : []),
+    ...(config.queue.isRenderRunner ? [RenderProcessor] : []),
   ],
   controllers: [RendersController],
 })

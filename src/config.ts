@@ -15,7 +15,9 @@ export const config = {
     name: process.env.RENDER_QUEUE as string,
     logs: 'render_logs',
     file: 'render_file',
-    isRunner: process.env.IS_QUEUE_RUNNER === 'true' ? true : false,
+    isRenderRunner: process.env.IS_RENDER_RUNNER === 'true' ? true : false,
+    isLogsRunner: process.env.IS_LOGS_RUNNER === 'true' ? true : false,
+    isFileRunner: process.env.IS_FILE_RUNNER === 'true' ? true : false,
   },
   ffmpeg: {
     path: process.env.FFMPEG_PATH as string,

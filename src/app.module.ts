@@ -22,6 +22,12 @@ import { AuthModule } from './auth/auth.module';
     PgmqModule.registerQueue({
       name: config.queue.name,
     }),
+    PgmqModule.registerQueue({
+      name: config.queue.logs,
+    }),
+    PgmqModule.registerQueue({
+      name: config.queue.file,
+    }),
     RendersModule,
   ],
   controllers: [AppController],
