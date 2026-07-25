@@ -11,7 +11,7 @@ import {
 
 import { RendersService } from './renders.service';
 import { RenderDto, RunDto } from './renders.dto';
-import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { RenderResponse } from '../types';
 import { AuthGuard } from '../auth/auth.guard';
 
@@ -29,6 +29,12 @@ export class RendersController {
 
   @Get(':id')
   @ApiResponse({ type: RenderResponse })
+  @ApiParam({
+    name: 'id',
+    description: 'The ID of the render',
+    required: true,
+    type: String,
+  })
   async findOne(@Param() params: { id: string }, @Request() req) {
     return await this.renderService.findOne(params.id, req.user);
   }

@@ -5,8 +5,6 @@ import { config } from './config';
 import { RendersModule } from './renders/renders.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { RenderProcessor } from './renders/renders.processor';
-import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({

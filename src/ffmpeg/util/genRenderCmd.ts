@@ -31,12 +31,10 @@ export const genRenderCmd = (
   const assignedMedias = {};
   const genInput = (e: EncoderProject) => {
     fileCounter++;
-    const assignedMedia = `$MEDIA_${fileCounter}`;
-    const mediaFile = `"${documentDir().replace('file://', '')}/${e.folderId}/${
-      e.isCopy || e.id
-    }_${processFileName(e.filename)}"`;
+    const assignedMedia = `MEDIA_${fileCounter}`;
+    const mediaFile = `${documentDir()}/${e.folderId}/${getFileId(e)}`;
     assignedMedias[assignedMedia] = mediaFile;
-    return assignedMedia;
+    return `$${assignedMedia}`;
   };
 
   const layerMedia = layers?.map((layer) => ({
@@ -320,12 +318,12 @@ export const genRenderCmd = (
   } as Media)}`;
   const execCmd = [
     ...(files || []),
-    ['-crf', encoding?.compressionLevel?.toString() || '20'],
+    // ['-crf', encoding?.compressionLevel?.toString() || '20'],
     '-filter_complex',
     allFilters,
     '-aspect',
     aspectRatio,
-    ['-preset', encoding?.preset || 'medium'],
+    // ['-preset', encoding?.preset || 'medium'],
     '-movflags',
     '+faststart',
     ...(encoding.output === FFMpegOutputType.mp3 ? [] : ['-map', '[v_concat]']),
@@ -350,5 +348,6 @@ export const genRenderCmd = (
     encoded: [] as string[],
     projectData,
     assignedMedias,
+    outputPath,
   };
 };

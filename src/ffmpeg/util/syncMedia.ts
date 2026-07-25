@@ -1,12 +1,16 @@
 import fs from 'fs';
 import http from 'http';
+import https from 'https';
 import { EncoderProject } from '../../types';
 import { documentDir, getFileId } from './util';
 const downloadFile = async ({ filePath, dirPath, url }) =>
   new Promise((res) => {
-    fs.mkdirSync(dirPath, { recursive: true });
+    try {
+      fs.mkdirSync(dirPath, { recursive: true });
+    } catch (err) {}
     const file = fs.createWriteStream(filePath);
-    const request = http.get(url, function (response) {
+    const protocoledClient = url.search('https') > -1 ? https : http;
+    const request = protocoledClient.get(url, function (response) {
       response.pipe(file);
 
       // after download completed close filestream
@@ -22,7 +26,7 @@ export const syncMedia = async (media: EncoderProject) => {
   const dirPath = `${documentDir()}/${media.folderId}`;
   const filePath = `${dirPath}/${filename}`;
   const exists = fs.existsSync(filePath);
-  if (exists) return filePath;
+  if (exists) fs.unlinkSync(filePath);
 
   await downloadFile({ filePath, dirPath, url: media.uri || media.url });
 

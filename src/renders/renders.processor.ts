@@ -20,14 +20,17 @@ export class RenderProcessor {
     const { renderId, userId } = job.message.data;
     const render = await this.renderService.findOne(renderId, userId);
     console.log('start encoding', render);
-    const encoding = await encodeProject(
-      render!.data.project,
-      render!.data.layers,
-      false,
-      (progress) => this.logsQueue.add('logs', { renderId, progress }),
-      (logs) => this.logsQueue.add('logs', { renderId, logs }),
-    );
-    console.log('encoding done', encoding);
-    this.fileQueue.add('file', { renderId, media: encoding });
+    try {
+      const encoding = await encodeProject(
+        render!.data.project,
+        render!.data.layers,
+        false,
+        (progress) => this.logsQueue.add('logs', { renderId, progress, userId }),
+        (logs) => this.logsQueue.add('logs', { renderId, logs, userId }),
+      );
+      this.fileQueue.add('file', { renderId, media: encoding });
+    } catch (err) {
+      console.error('rnder failed', renderId);
+    }
   }
 }

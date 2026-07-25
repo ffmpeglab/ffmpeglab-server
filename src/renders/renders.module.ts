@@ -9,19 +9,21 @@ import { AuthService } from '../auth/auth.service';
 import { ApiKey } from '../model/apikey.entity';
 import { FileProcessor } from './file.processor';
 import { LogsProcessor } from './logs.processor';
+import { LogPiece } from '../model/logpiece.entity';
 
+const optionalProviders = [
+  ...(config.queue.isLogsRunner ? [LogsProcessor] : []),
+  ...(config.queue.isFileRunner ? [FileProcessor] : []),
+  ...(config.queue.isRenderRunner ? [RenderProcessor] : []),
+];
+console.info({ optionalProviders });
 @Module({
   imports: [
     TypeOrmModule.forFeature([Render]),
     TypeOrmModule.forFeature([ApiKey]),
+    TypeOrmModule.forFeature([LogPiece]),
   ],
-  providers: [
-    AuthService,
-    RendersService,
-    ...(config.queue.isLogsRunner ? [LogsProcessor] : []),
-    ...(config.queue.isFileRunner ? [FileProcessor] : []),
-    ...(config.queue.isRenderRunner ? [RenderProcessor] : []),
-  ],
+  providers: [AuthService, RendersService, ...optionalProviders],
   controllers: [RendersController],
 })
 export class RendersModule {}

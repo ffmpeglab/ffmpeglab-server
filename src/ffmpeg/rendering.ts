@@ -25,6 +25,7 @@ export const execEncode = async (cmd: {
   files: (string | undefined)[];
   encoded: string[];
   outFileId: string;
+  outputPath: string;
   execCmd: string[];
   mediaOut: Media;
   cb?: CBProgressCallback;
@@ -53,9 +54,9 @@ export const execEncode = async (cmd: {
     console.info('after exec', exec, outFileId);
     const url = `${documentDir()}/${cmd.outFileId}`;
     cmd.mediaOut.filePath = url;
-    const stats = await fs.statSync(cmd.mediaOut.filePath);
+    const stats = fs.statSync(cmd.outputPath);
     cmd.mediaOut.size = stats?.size;
-    return url;
+    return cmd.outputPath;
   } catch (err) {
     console.error('encodeProject error', err);
     throw err;
@@ -102,6 +103,7 @@ export const encodeProject = async (
       filename: cmd.outFileId as string,
       width: projectData.editor.width,
       height: projectData.editor.height,
+      userId: projectData.userId,
       title: `${projectData.title}_${new Date().toLocaleString()}`,
     };
     cmd.encoded = encoded;

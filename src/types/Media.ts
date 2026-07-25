@@ -15,7 +15,15 @@ import type { XFADE } from './MediaUtils';
 export const defaultVideoDuration = 5;
 export type MinimalMedia = Pick<
   Media,
-  'id' | 'duration' | 'filename' | 'width' | 'height' | 'title' | 'filePath'
+  | 'id'
+  | 'duration'
+  | 'filename'
+  | 'width'
+  | 'height'
+  | 'title'
+  | 'filePath'
+  | 'url'
+  | 'userId'
 >;
 
 export class Media {

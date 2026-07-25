@@ -12,12 +12,20 @@ export const config = {
     synchronize: process.env.DB_MIGRATION_ENABLED === 'true' ? true : false,
   },
   queue: {
-    name: process.env.RENDER_QUEUE as string,
-    logs: 'render_logs',
-    file: 'render_file',
+    name: process.env.RENDER_QUEUE || 'render',
+    logs: process.env.LOGS_QUEUE || 'logs',
+    file: process.env.FILE_QUEUE || 'file',
     isRenderRunner: process.env.IS_RENDER_RUNNER === 'true' ? true : false,
     isLogsRunner: process.env.IS_LOGS_RUNNER === 'true' ? true : false,
     isFileRunner: process.env.IS_FILE_RUNNER === 'true' ? true : false,
+  },
+  s3: {
+    region: process.env.S3_REGION as string,
+    endpoint: process.env.S3_ENDPOINT as string,
+    credentials: {
+      accessKeyId: process.env.S3_ACCESS_KEY as string,
+      secretAccessKey: process.env.S3_SECRET_KEY as string,
+    },
   },
   ffmpeg: {
     path: process.env.FFMPEG_PATH as string,
