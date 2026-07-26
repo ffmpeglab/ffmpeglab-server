@@ -18,6 +18,8 @@ services:
       - isolated
       - public
   render-runner:
+    depends_on:
+      - api
     image: ffmpeglab/server:main
     volumes:
       - ./tmp:/tmp/ffmpeglab
@@ -32,6 +34,8 @@ services:
       - isolated
       - public
   file-runner:
+    depends_on:
+      - api
     image: ffmpeglab/server:main
     volumes:
       - ./tmp:/tmp/ffmpeglab
@@ -50,6 +54,8 @@ services:
       - isolated
       - public
   logs-runner:
+    depends_on:
+      - api
     image: ffmpeglab/server:main
     environment:
       - DB_HOST=${DB_HOST}
