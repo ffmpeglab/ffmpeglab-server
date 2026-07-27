@@ -50,10 +50,10 @@ export class FileProcessor {
 
         // Generate presigned URL for GET
         const getObjectCmd = new GetObjectCommand({
-          Bucket: renderId,
+          Bucket: config.s3.bucketId,
           Key: fileKey,
         });
-        
+
         const link = await getSignedUrl(this.s3client, getObjectCmd, {
           expiresIn: 3600 * 24 * 6,
         }); // 6 days
