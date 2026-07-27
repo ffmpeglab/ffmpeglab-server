@@ -21,6 +21,7 @@ export class RenderProcessor {
     const render = await this.renderService.findOne(renderId, userId);
     console.log('start encoding', render);
     try {
+      await this.renderService.updateRenderStatus(renderId, 'rendering');
       const encoding = await encodeProject(
         render!.data.project,
         render!.data.layers,
@@ -30,8 +31,10 @@ export class RenderProcessor {
         (logs) => this.logsQueue.add('logs', { renderId, logs, userId }),
       );
       this.fileQueue.add('file', { renderId, media: encoding, userId });
+      await this.renderService.updateRenderStatus(renderId, 'done');
     } catch (err) {
       console.error('rnder failed', renderId);
+      await this.renderService.updateRenderStatus(renderId, 'error');
     }
   }
 }

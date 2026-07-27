@@ -50,6 +50,15 @@ export class RendersService {
     await this.rendersRepository.update({ id: renderId }, { result: media });
     return await this.findOne(renderId, media.userId as string);
   }
+
+  async updateRenderStatus(
+    renderId: string,
+    status: 'done' | 'rendering' | 'error',
+  ) {
+    await this.rendersRepository.update({ id: renderId }, { status });
+    return await this.rendersRepository.findOneBy({ id: renderId });
+  }
+
   async appendLogs(renderId: string, logs: string, userId: string) {
     return await this.logRepository.insert({
       logs,

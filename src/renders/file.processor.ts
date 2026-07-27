@@ -24,12 +24,13 @@ export class FileProcessor {
     });
   }
   @Process('file')
-  async handleFile(job: PgmqJob<{ renderId: string; media: MinimalMedia, userId:string }>) {
+  async handleFile(
+    job: PgmqJob<{ renderId: string; media: MinimalMedia; userId: string }>,
+  ) {
     console.log('new file', job);
     const { userId, media, renderId } = job.message.data;
     try {
       if (media?.id && this.s3client) {
-
         const fileStream = fs.createReadStream(media.filePath as string);
         const metadata: Record<string, string> = {};
         for (const [key, value] of Object.entries(media)) {
@@ -38,7 +39,7 @@ export class FileProcessor {
           }
         }
         metadata.name = media.filename;
-        const fileKey = `${userId}/${renderId}/${getFileId(media as Media)}`
+        const fileKey = `${userId}/${renderId}/${getFileId(media as Media)}`;
         const putObjectCmd = new PutObjectCommand({
           Bucket: config.s3.bucketId,
           Key: fileKey,
