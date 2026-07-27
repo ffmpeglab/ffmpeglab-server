@@ -28,6 +28,8 @@ services:
     depends_on:
       - api
     image: ffmpeglab/server:main
+    deploy:
+      replicas: 2
     volumes:
       - ./tmp:/tmp/ffmpeglab
     environment:
