@@ -4,6 +4,7 @@ networks:
   public:   # Standard bridge network, created by Compose on docker compose up
 services:
   api:
+    restart: unless-stopped
     image: ffmpeglab/server:main
     ports:
       - "3000:3000"
@@ -23,6 +24,7 @@ services:
       - isolated
       - public
   render-runner:
+    restart: unless-stopped
     depends_on:
       - api
     image: ffmpeglab/server:main
@@ -44,6 +46,7 @@ services:
       - isolated
       - public
   file-runner:
+    restart: unless-stopped
     depends_on:
       - api
     image: ffmpeglab/server:main
@@ -69,6 +72,7 @@ services:
       - isolated
       - public
   logs-runner:
+    restart: unless-stopped
     depends_on:
       - api
     image: ffmpeglab/server:main
