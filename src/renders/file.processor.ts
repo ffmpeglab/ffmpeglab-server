@@ -53,7 +53,7 @@ export class FileProcessor {
         }
         metadata.name = media.filename;
         const putObjectCmd = new PutObjectCommand({
-          Bucket: 'renders',
+          Bucket: config.s3.bucketId,
           Key: `${renderId}/${getFileId(media as Media)}`,
           Body: fileStream,
           ContentType: 'video/mp4',

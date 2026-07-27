@@ -21,6 +21,7 @@ export const config = {
     isFileRunner: process.env.IS_FILE_RUNNER === 'true' ? true : false,
   },
   s3: {
+    bucketId: process.env.S3_BUCKET_ID || 'renders',
     region: process.env.S3_REGION as string,
     endpoint: process.env.S3_ENDPOINT as string,
     credentials: {
