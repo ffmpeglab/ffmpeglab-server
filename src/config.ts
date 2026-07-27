@@ -13,6 +13,14 @@ export const config = {
     synchronize: process.env.DB_MIGRATION_ENABLED === 'true' ? true : false,
   },
   queue: {
+    db:{
+      host: process.env.QUEUE_DB_HOST,
+      port: parseInt(process.env.QUEUE_DB_PORT || '5432', 10),
+      username: process.env.QUEUE_DB_USER,
+      user: process.env.QUEUE_DB_USER,
+      password: process.env.QUEUE_DB_PASSWORD,
+      database: process.env.QUEUE_DB_NAME,
+    },
     name: process.env.RENDER_QUEUE || 'render',
     logs: process.env.LOGS_QUEUE || 'logs',
     file: process.env.FILE_QUEUE || 'file',

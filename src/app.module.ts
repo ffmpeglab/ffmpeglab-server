@@ -13,7 +13,7 @@ import { AppService } from './app.service';
     }),
     PgmqModule.forRootAsync({
       useFactory: () => ({
-        connection: config.db,
+        connection: config.queue.db,
       }),
     }),
     // 2. Register a queue
