@@ -24,25 +24,11 @@ export class FileProcessor {
     });
   }
   @Process('file')
-  async handleFile(job: PgmqJob<{ renderId: string; media: MinimalMedia }>) {
+  async handleFile(job: PgmqJob<{ renderId: string; media: MinimalMedia, userId:string }>) {
     console.log('new file', job);
-    const { media, renderId } = job.message.data;
+    const { userId, media, renderId } = job.message.data;
     try {
       if (media?.id && this.s3client) {
-        // Ensure bucket exists
-        try {
-          const bucketExistsCmd = new HeadBucketCommand({ Bucket: renderId });
-          await this.s3client.send(bucketExistsCmd);
-        } catch (error: any) {
-          if (error.name === 'NotFound') {
-            const createBucketCmd = new CreateBucketCommand({
-              Bucket: renderId,
-            });
-            await this.s3client.send(createBucketCmd);
-          } else {
-            throw error;
-          }
-        }
 
         const fileStream = fs.createReadStream(media.filePath as string);
         const metadata: Record<string, string> = {};
@@ -52,9 +38,10 @@ export class FileProcessor {
           }
         }
         metadata.name = media.filename;
+        const fileKey = `${userId}/${renderId}/${getFileId(media as Media)}`
         const putObjectCmd = new PutObjectCommand({
           Bucket: config.s3.bucketId,
-          Key: `${renderId}/${getFileId(media as Media)}`,
+          Key: fileKey,
           Body: fileStream,
           ContentType: 'video/mp4',
           Metadata: metadata,
@@ -64,8 +51,9 @@ export class FileProcessor {
         // Generate presigned URL for GET
         const getObjectCmd = new GetObjectCommand({
           Bucket: renderId,
-          Key: media.id,
+          Key: fileKey,
         });
+        
         const link = await getSignedUrl(this.s3client, getObjectCmd, {
           expiresIn: 3600 * 24 * 6,
         }); // 6 days

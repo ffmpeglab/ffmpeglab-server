@@ -29,7 +29,7 @@ export class RenderProcessor {
           this.logsQueue.add('logs', { renderId, progress, userId }),
         (logs) => this.logsQueue.add('logs', { renderId, logs, userId }),
       );
-      this.fileQueue.add('file', { renderId, media: encoding });
+      this.fileQueue.add('file', { renderId, media: encoding, userId });
     } catch (err) {
       console.error('rnder failed', renderId);
     }
