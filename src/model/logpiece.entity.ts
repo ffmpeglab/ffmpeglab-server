@@ -7,7 +7,7 @@ export class LogPiece {
   id: string;
 
   @Column()
-  date: number;
+  date: Date;
 
   @Column()
   logs: string;

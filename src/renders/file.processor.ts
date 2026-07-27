@@ -1,7 +1,7 @@
 import { Processor, Process } from 'nestjs-pgmq';
 import { config } from '../config';
 import type { PgmqJob } from 'nestjs-pgmq';
-import { MinimalMedia } from '../types';
+import { Media, MinimalMedia } from '../types';
 import { RendersService } from './renders.service';
 import {
   S3Client,
@@ -12,6 +12,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import fs from 'node:fs';
+import { getFileId } from '../ffmpeg/util/util';
 
 @Processor(config.queue.file)
 export class FileProcessor {
@@ -50,10 +51,12 @@ export class FileProcessor {
             metadata[key] = String(value);
           }
         }
+        metadata.name = media.filename;
         const putObjectCmd = new PutObjectCommand({
-          Bucket: renderId,
-          Key: media.id,
+          Bucket: 'renders',
+          Key: `${renderId}/${getFileId(media as Media)}`,
           Body: fileStream,
+          ContentType: 'video/mp4',
           Metadata: metadata,
         });
         await this.s3client.send(putObjectCmd);

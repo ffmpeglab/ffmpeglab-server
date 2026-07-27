@@ -25,7 +25,8 @@ export class RenderProcessor {
         render!.data.project,
         render!.data.layers,
         false,
-        (progress) => this.logsQueue.add('logs', { renderId, progress, userId }),
+        (progress) =>
+          this.logsQueue.add('logs', { renderId, progress, userId }),
         (logs) => this.logsQueue.add('logs', { renderId, logs, userId }),
       );
       this.fileQueue.add('file', { renderId, media: encoding });

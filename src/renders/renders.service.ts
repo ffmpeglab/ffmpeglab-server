@@ -55,7 +55,7 @@ export class RendersService {
       logs,
       render: renderId,
       user_id: userId,
-      date: new Date().valueOf(),
+      date: new Date().toISOString(),
     });
   }
 
