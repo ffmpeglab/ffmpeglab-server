@@ -53,7 +53,7 @@ export class RendersService {
 
   async updateRenderStatus(
     renderId: string,
-    status: 'done' | 'rendering' | 'error',
+    status: 'done' | 'rendering' | 'error' | 'queue',
   ) {
     await this.rendersRepository.update({ id: renderId }, { status });
     return await this.rendersRepository.findOneBy({ id: renderId });
@@ -77,6 +77,7 @@ export class RendersService {
       },
       { headers: { retryCount: 1 } },
     );
+    await this.updateRenderStatus(renderId, "queue")
     return queueItem;
   }
 }
