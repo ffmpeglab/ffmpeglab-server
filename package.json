@@ -19,7 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "sdk":"yarn sdk-ts && yarn sdk-py && yarn sdk-rust && yarn sdk-go",
-    "sdk-ts": "openapi-generator-cli generate -i https://api.ffmpeglab.com/api-yaml -g typescript -o sdk/ts --openapi-generator-ignore-list 'README.md,tsconfig.json,package.json' --additional-properties=npmName=ffmpeglab-sdk,supportsES6=true,npmVersion=0.3.0,withInterfaces=true",
+    "sdk-ts": "openapi-generator-cli generate -i https://api.ffmpeglab.com/api-yaml -g typescript-fetch -o sdk/ts --openapi-generator-ignore-list 'README.md' --additional-properties=npmName=ffmpeglab-sdk,supportsES6=true,npmVersion=0.3.0,withInterfaces=true",
     "sdk-py": "openapi-generator-cli generate -i https://api.ffmpeglab.com/api-yaml -g python -o sdk/py --additional-properties=npmName=ffmpeglab-sdk,supportsES6=true,npmVersion=0.3.0,withInterfaces=true",
     "sdk-rust": "openapi-generator-cli generate -i https://api.ffmpeglab.com/api-yaml -g rust -o sdk/rust --additional-properties=npmName=ffmpeglab-sdk,supportsES6=true,npmVersion=0.3.0,withInterfaces=true",
     "sdk-go": "openapi-generator-cli generate -i https://api.ffmpeglab.com/api-yaml -g go -o sdk/go --additional-properties=npmName=ffmpeglab-sdk,supportsES6=true,npmVersion=0.3.0,withInterfaces=true"
