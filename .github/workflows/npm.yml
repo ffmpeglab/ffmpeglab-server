@@ -21,7 +21,7 @@ jobs:
       - run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
       - run: yarn
       - run: yarn sdk-ts
-      - run: cd sdk/ts && node -e 'const json=require('./package.json');fs.writeFileSync(JSON.stringify({...json, version:`"${process.env.GITHUB_REF}"`}), 'utf-8')' && yarn && yarn build && yarn publish
+      - run: cd sdk/ts && node -e 'const json=require("./package.json");fs.writeFileSync(JSON.stringify({...json, version:`"${process.env.GITHUB_REF}"`}), 'utf-8')' && yarn && yarn build && yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
