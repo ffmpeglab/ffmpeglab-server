@@ -36,6 +36,7 @@ tmp
 !.vscode/extensions.json
 
 sdk/*
+!sdk/*/docs
 !sdk/*/README.md
 !sdk/*/tsconfig.json
 
