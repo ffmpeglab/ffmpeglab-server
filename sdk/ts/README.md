@@ -10,6 +10,7 @@ This simple code allows you to render a small project
 ```ts
 import * as ffmpeglab from 'ffmpeglab-sdk';
 
+const mediaUrl = 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4'
 const clientConfig = new ffmpeglab.Configuration({
   accessToken: 'API_KEY',
   basePath: 'https://api.ffmpeglab.com',
@@ -17,11 +18,13 @@ const clientConfig = new ffmpeglab.Configuration({
 
 const client = new ffmpeglab.RendersApi(clientConfig);
 
-const render = await client.rendersControllerCreate({
-  project: 'myproject',
-  editor: {
-    code: '-i $MEDIA_1 -movflags +faststart myproject.mp4',
-    selectedCode: 'custom',
+client.rendersControllerCreate({
+  project: { 
+      id:'myproject',
+      editor: {
+        code: '-i $MEDIA_1 -movflags +faststart myproject.mp4',
+        selectedCode: 'custom'
+      }
   },
   layers: [
     {
@@ -29,14 +32,15 @@ const render = await client.rendersControllerCreate({
       media: [
         {
           id: 'media1',
-          url: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
+          url: mediaUrl,
         },
       ],
     },
   ],
-});
-
-await client.rendersControllerRunRender({runDto:{id:render.id}})
+})
+.then((render)=>client.rendersControllerRunRender({
+  runDto:{id:render.id}
+}))
 ```
 
 
