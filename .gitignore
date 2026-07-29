@@ -35,6 +35,10 @@ tmp
 !.vscode/launch.json
 !.vscode/extensions.json
 
+sdk/*
+!sdk/*/README.md
+!sdk/*/tsconfig.json
+
 # dotenv environment variable files
 .env
 env.sh

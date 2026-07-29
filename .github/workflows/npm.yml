@@ -1,0 +1,29 @@
+name: Publish Package to npmjs
+on:
+  release:
+    types: [published]
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      # Setup .npmrc file to publish to npm
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
+      - run: yarn
+      - run: yarn sdk-ts
+      - run: cd sdk/ts && yarn && yarn build && yarn publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
