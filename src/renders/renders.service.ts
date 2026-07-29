@@ -77,7 +77,7 @@ export class RendersService {
       },
       { headers: { retryCount: 1 } },
     );
-    await this.updateRenderStatus(renderId, "queue")
+    await this.updateRenderStatus(renderId, 'queue');
     return queueItem;
   }
 }
