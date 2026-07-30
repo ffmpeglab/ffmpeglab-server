@@ -18,7 +18,7 @@ const clientConfig = new ffmpeglab.Configuration({
 
 const client = new ffmpeglab.RendersApi(clientConfig);
 
-client.rendersControllerCreate({
+client.rendersControllerCreate({renderDto:{
   project: { 
       id:'myproject',
       editor: {
@@ -32,14 +32,16 @@ client.rendersControllerCreate({
       media: [
         {
           id: 'media1',
-          url: mediaUrl,
-        },
-      ],
-    },
-  ],
-})
+          url: mediaUrl
+        }
+      ]
+    }
+  ]
+}})
 .then((render)=>client.rendersControllerRunRender({
-  runDto:{id:render.id}
+  runDto:{
+    id:render.id
+  }
 }))
 ```
 
