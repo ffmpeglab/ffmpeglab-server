@@ -47,7 +47,7 @@ FFmpegLab Server is built on **Supabase** — the open-source Firebase alternati
 | **S3-compatible Storage** | Supabase | File storage for media assets and rendered output |
 | **REST API** | Supabase | Auto-generated REST API with JWT authentication |
 | **API Keys** | Supabase | User-managed API keys with role-based access |
-| **Logs** | Supabase | Centralized logging with retention policies |
+| **Logs** | Supabase | Centralized storage of FFmpegLab runner stdout from the ffmpeg execution |
 
 ### Database Schema & Models
 
@@ -57,7 +57,7 @@ The server uses TypeORM with models defined in `src/models/`:
 |-------|-------------|
 | `Render` | Render job tracking and status |
 | `ApiKey` | API key management with permissions |
-| `LogPiece` | System and user activity logs |
+| `LogPiece` | FFmpeg runner stdout from the ffmpeg execution |
 
 ---
 
@@ -72,13 +72,6 @@ DB_USER=postgres
 DB_PORT=5432
 DB_PASSWORD=your_password
 DB_NAME=ffmpeglab
-
-# Queue Database (can be the same as DB_HOST)
-QUEUE_DB_HOST=postgres
-QUEUE_DB_USER=postgres
-QUEUE_DB_PORT=5432
-QUEUE_DB_PASSWORD=your_password
-QUEUE_DB_NAME=ffmpeglab_queue
 
 # S3 Storage (required for file-runner)
 S3_ACCESS_KEY=your_access_key
@@ -95,8 +88,6 @@ S3_ENDPOINT=https://s3.amazonaws.com
 | `DB_USER` | PostgreSQL user | Yes |
 | `DB_PASSWORD` | PostgreSQL password | Yes |
 | `DB_NAME` | PostgreSQL database name | Yes |
-| `QUEUE_DB_HOST` | Queue PostgreSQL host | Yes |
-| `QUEUE_DB_NAME` | Queue PostgreSQL database name | Yes |
 | `S3_ACCESS_KEY` | S3 access key | For file-runner |
 | `S3_SECRET_KEY` | S3 secret key | For file-runner |
 | `DB_MIGRATION_ENABLED` | Auto-run migrations | No (default: false) |
