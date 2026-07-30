@@ -46,4 +46,4 @@ client.rendersControllerCreate({renderDto:{
 ```
 
 
-see [docs](https://api.ffmpeglab.com/api) for more
+see [docs](https://github.com/ffmpeglab/server/blob/main/sdk/ts/docs/RendersApi.md) for more
