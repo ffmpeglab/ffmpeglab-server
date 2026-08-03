@@ -8,17 +8,10 @@ FFmpegLab Server is the API backend for the FFmpegLab ecosystem. It handles rend
 
 ## Quick Start
 
+This automatic script will install supabase and ffmpeglab
+
 ```bash
-# Clone and configure
-git clone https://github.com/ffmpeglab/server.git
-cd server
-cp .env.example .env
-
-# Edit .env with your database credentials
-nano .env
-
-# Start all services
-docker compose up -d
+curl -sSL https://ffmpeglab.com/sh/install.sh | bash
 ```
 
 The server will be available at `http://localhost:3000`.
