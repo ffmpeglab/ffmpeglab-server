@@ -20,9 +20,10 @@ const client = new ffmpeglab.RendersApi(clientConfig);
 
 client.rendersControllerCreate({renderDto:{
   project: { 
-      id:'myproject',
+      id: 'myproject',
+      title: 'myproject',
       editor: {
-        code: '-i $MEDIA_1 -movflags +faststart myproject.mp4',
+        code: '-i $MEDIA_1 -movflags +faststart $OUTPUT_PATH',
         selectedCode: 'custom'
       }
   },
@@ -32,9 +33,13 @@ client.rendersControllerCreate({renderDto:{
       media: [
         {
           id: 'media1',
-          url: mediaUrl
+          url: mediaUrl,
+          folderId: "myfolder",
+          filename: "zoompan.mp4",
+          encoding: {}
         }
-      ]
+      ],
+      "editor":{}
     }
   ]
 }})
