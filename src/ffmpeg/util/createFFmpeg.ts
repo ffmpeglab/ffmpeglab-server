@@ -28,7 +28,7 @@ export const createFFmpeg = async (
         }
         const cmdProcessed =
           typeof cmd === 'string'
-            ? ncmd
+            ? [ncmd]
             : cmd.map((k) =>
                 env[k.replace('$', '')]
                   ? (env[k.replace('$', '')] as string)
@@ -37,7 +37,10 @@ export const createFFmpeg = async (
         const postmapcmd = cmdProcessed as string[];
         console.info({ postmapcmd });
         const child = spawn(
-          path.join(__dirname.replace('/dist', '/src'), '/execffmpeg.sh'),
+          path.join(
+            __dirname.replace('/dist', '/src').replace('/src/src', '/src'),
+            '/execffmpeg.sh',
+          ),
           postmapcmd,
           { env },
         );
