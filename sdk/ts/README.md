@@ -23,7 +23,7 @@ client.rendersControllerCreate({renderDto:{
       id: 'myproject',
       title: 'myproject',
       editor: {
-        code: '-i $MEDIA_1 -movflags +faststart $OUTPUT_PATH',
+        code: '-i $MEDIA_1 -movflags +faststart -y $OUTPUT_PATH',
         selectedCode: 'custom'
       }
   },
