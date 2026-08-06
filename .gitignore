@@ -39,7 +39,7 @@ sdk/*
 !sdk/*/docs
 !sdk/*/README.md
 !sdk/*/tsconfig.json
-
+!sdk/yaml
 # dotenv environment variable files
 .env
 env.sh

@@ -1,0 +1,98 @@
+# pipeline.yaml
+name: "Audio Processing Pipeline"
+description: "Automatically processes podcast audio with loudness normalization, noise reduction, and waveform generation"
+version: "1.0.0"
+
+# Storage configuration
+storage:
+  buckets:
+    - name: "private-uploads"
+      public: false
+      allowed_mime_types:
+        - "audio/mpeg"
+        - "audio/wav"
+        - "audio/flac"
+        - "video/mp4"
+    - name: "public-processed"
+      public: true
+      allowed_mime_types:
+        - "audio/mpeg"
+        - "image/png"
+
+  rls_policies:
+    - name: "Users can upload to their own folder"
+      operation: "INSERT"
+      role: "authenticated"
+      condition: |
+        bucket_id = 'private-uploads' AND
+        (storage.foldername(name))[1] = auth.uid()::text
+
+# Queue configuration
+queue:
+  name: "audio_processing_queue"
+
+# Trigger configuration
+trigger:
+  name: "handle_audio_upload"
+  event: "INSERT"
+  table: "storage.objects"
+  condition: |
+    NEW.bucket_id = 'private-uploads'
+
+# Processing pipeline
+pipeline:
+  steps:
+    - id: "extract_audio"
+      type: "ffmpeg"
+      description: "Extract audio from video or convert to WAV"
+      command: |
+        ffmpeg -i "INPUT_FILE" -ac 1 -ar 16000 -vn "AUDIO_OUTPUT"
+      inputs:
+        - "INPUT_FILE"
+      outputs:
+        - "AUDIO_OUTPUT"
+      output_path: "{{userId}}/temp/{{baseFilename}}.wav"
+
+    - id: "normalize_loudness"
+      type: "ffmpeg"
+      description: "Apply EBU R128 loudness normalization"
+      command: |
+        ffmpeg -i "INPUT_FILE" -af "loudnorm=I=-16:LRA=11:TP=-1.5" -c:a libmp3lame -b:a 192k "OUTPUT_FILE"
+      inputs:
+        - "INPUT_FILE"
+      outputs:
+        - "OUTPUT_FILE"
+      output_path: "{{userId}}/podcast/{{baseFilename}}.mp3"
+      depends_on:
+        - "extract_audio"
+
+    - id: "generate_waveform"
+      type: "ffmpeg"
+      description: "Generate waveform image"
+      command: |
+        ffmpeg -i "INPUT_FILE" -filter_complex "showwavespic=s=1200x200:colors=#FC6D26" -frames:v 1 "OUTPUT_FILE"
+      inputs:
+        - "INPUT_FILE"
+      outputs:
+        - "OUTPUT_FILE"
+      output_path: "{{userId}}/waveforms/{{baseFilename}}.png"
+      depends_on:
+        - "normalize_loudness"
+
+# Notification channels
+notifications:
+  channels:
+    - name: "audio_upload_channel"
+      payload: |
+        jsonb_build_object(
+          'userId', user_id,
+          'filePath', file_path,
+          'status', 'queued',
+          'timestamp', NOW()
+        )
+
+# Render tracking
+render:
+  project_name: "audio-processing"
+  status: "queued"
+  public: false
