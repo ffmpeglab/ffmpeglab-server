@@ -51,7 +51,7 @@ curl -X GET https://api.ffmpeglab.com/renders/${RENDER_ID} \
 
 echo '\n'
 
-sleep 3
+sleep 5
 
 curl -X GET https://api.ffmpeglab.com/renders/${RENDER_ID} \
   -H "Authorization: Bearer ${API_KEY}" \
