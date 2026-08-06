@@ -60,7 +60,7 @@ export class FileProcessor {
         }); // 6 days
 
         media.url = link;
-        await this.renderService.updateMediaResult(renderId, media);
+        await this.renderService.updateMediaResult(renderId, {...media, userId});
       }
     } catch (err) {
       console.error('file upload err', err);
