@@ -316,6 +316,7 @@ export const genRenderCmd = (
     id: newMediaId,
     filename: outFileId,
   } as Media)}`;
+  assignedMedias['OUTPUT_PATH'] = outputPath;
   const execCmd = [
     ...(files || []),
     // ['-crf', encoding?.compressionLevel?.toString() || '20'],
@@ -337,7 +338,7 @@ export const genRenderCmd = (
     '-to',
     niceTime,
     '-y',
-    outputPath,
+    '$OUTPUT_PATH',
   ];
 
   return {
