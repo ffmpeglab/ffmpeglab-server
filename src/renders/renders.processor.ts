@@ -15,9 +15,17 @@ export class RenderProcessor {
     private readonly fileQueue: PgmqQueue,
   ) {}
   @Process('render')
-  async handleRender(job: PgmqJob<{ renderId: string; userId: string }>) {
+  async handleRender(
+    job: PgmqJob<{
+      renderId: string;
+      userId: string;
+      bucket?: string;
+      outputPath?: string;
+      runId?: string;
+    }>,
+  ) {
     console.log('starting render ', job);
-    const { renderId, userId } = job.message.data;
+    const { renderId, userId, bucket, outputPath, runId } = job.message.data;
     const render = await this.renderService.findOne(renderId, userId);
     console.log('start encoding', render);
     try {
@@ -30,7 +38,14 @@ export class RenderProcessor {
           this.logsQueue.add('logs', { renderId, progress, userId }),
         (logs) => this.logsQueue.add('logs', { renderId, logs, userId }),
       );
-      this.fileQueue.add('file', { renderId, media: encoding, userId });
+      this.fileQueue.add('file', {
+        renderId,
+        media: encoding,
+        userId,
+        bucket,
+        outputPath,
+        runId,
+      });
       await this.renderService.updateRenderStatus(renderId, 'done');
     } catch (err) {
       console.error('rnder failed', renderId);

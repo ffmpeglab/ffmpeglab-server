@@ -87,6 +87,8 @@ export enum FFMpegOutputType {
   mov = 'mov',
   avi = 'avi',
   mkv = 'mkv',
+  png = 'png',
+  jpg = 'jpg',
 }
 
 export type XFADE = XFade & 'none';

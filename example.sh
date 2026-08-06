@@ -1,4 +1,3 @@
-API_HOST=https://api.ffmpeglab.com
 RENDER=$(curl -X POST ${API_HOST}/renders \
   -H "Authorization: Bearer ${API_KEY}" \
   -H "Content-Type: application/json" \

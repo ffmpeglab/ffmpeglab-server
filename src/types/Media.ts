@@ -176,6 +176,8 @@ export class EncoderProjectEncoding {
 export class EncoderProject extends Media {
   @ApiProperty({ type: EncoderProjectEncoding })
   encoding: EncoderProjectEncoding;
+  key?: string;
+  bucket?: string;
 }
 export class EditorLayer extends Folder {
   @ApiProperty()

@@ -1,0 +1,139 @@
+# subtitle-pipeline.yaml
+name: "Automated Subtitle Generation Pipeline"
+pipelineId: "subtitle-pipeline"
+runId:
+  mode: "deterministic"
+  template: "{baseFilename}"
+description: "Extract audio, transcribe with Whisper, burn subtitles into video"
+version: "1.0.0"
+
+# Global editor defaults
+editor:
+  compressionLevel: 23
+  preset: "medium"
+  aspectRatio: "16:9"
+  framerate: 30
+  opacity: 1.0
+  output: "mp4"
+
+storage:
+  output_bucket: "public-processed"
+  buckets:
+    - name: "private-uploads"
+      public: false
+      allowed_mime_types:
+        - "video/mp4"
+        - "video/quicktime"
+        - "video/x-msvideo"
+        - "video/webm"
+        - "video/mpeg"
+    - name: "public-processed"
+      public: true
+      allowed_mime_types:
+        - "video/mp4"
+        - "text/plain"
+
+  rls_policies:
+    - name: "Users can upload to their own folder"
+      operation: "INSERT"
+      role: "authenticated"
+      condition: |
+        bucket_id = 'private-uploads' AND
+        (storage.foldername(name))[1] = auth.uid()::text
+
+    - name: "Users can download from their own folder"
+      operation: "SELECT"
+      role: "authenticated"
+      condition: |
+        bucket_id = 'private-uploads' AND
+        (storage.foldername(name))[1] = auth.uid()::text
+
+    - name: "Public read access to processed media"
+      operation: "SELECT"
+      role: "anon"
+      condition: |
+        bucket_id = 'public-processed'
+
+    - name: "Service role can manage processed media"
+      operation: "ALL"
+      role: "service_role"
+      condition: |
+        bucket_id = 'public-processed'
+
+    - name: "Users can read their own processed media"
+      operation: "SELECT"
+      role: "authenticated"
+      condition: |
+        bucket_id = 'public-processed' AND
+        (storage.foldername(name))[1] = auth.uid()::text
+
+steps:
+  # Step 1: Extract audio from video
+  - id: "extract_audio"
+    trigger:
+      name: "handle_extract_audio"
+      event: "INSERT"
+      table: "storage.objects"
+      condition: |
+        NEW.bucket_id = 'private-uploads' AND
+        NEW.metadata->>'mimetype' LIKE 'video/%'
+    command: -i $MEDIA_1 -ac 1 -ar 16000 -vn -y $OUTPUT_PATH
+    inputs: ["INPUT_FILE"]
+    outputs: ["OUTPUT_FILE"]
+    output_path: "{{userId}}/{{pipelineId}}/{{runId}}/temp/{{baseFilename}}.wav"
+    editor:
+      output: "wav"
+      preset: "fast"
+      selectedCode: "custom"
+      width: 0
+      height: 0
+      compressionLevel: 0
+    next_bucket: "private-uploads"
+    keep: false
+
+  # Step 2: Transcribe with Whisper
+  - id: "transcribe"
+    trigger:
+      name: "handle_transcribe"
+      event: "INSERT"
+      table: "storage.objects"
+      condition: |
+        NEW.bucket_id = 'private-uploads' AND
+        NEW.name LIKE '%.wav' AND
+        NEW.name NOT LIKE '%.emptyFolderPlaceholder'
+    command: whisper --model $WHISPER_MODEL --language $WHISPER_LANG --output-srt $OUTPUT_PATH $MEDIA_1
+    inputs: ["INPUT_FILE"]
+    outputs: ["OUTPUT_FILE"]
+    output_path: "{{userId}}/{{pipelineId}}/{{runId}}/subtitles/{{baseFilename}}.srt"
+    editor:
+      output: "srt"
+      preset: "medium"
+      selectedCode: "custom"
+    next_bucket: "private-uploads"
+    keep: false
+
+  # Step 3: Burn subtitles into video
+  - id: "burn_subtitles"
+    trigger:
+      name: "handle_burn_subtitles"
+      event: "INSERT"
+      table: "storage.objects"
+      condition: |
+        NEW.bucket_id = 'private-uploads' AND
+        NEW.name LIKE '%.srt' AND
+        NEW.name NOT LIKE '%.emptyFolderPlaceholder'
+    command: -i $MEDIA_1 -vf "subtitles=$MEDIA_2:force_style='FontName=Arial,FontSize=24,PrimaryColour=&HFFFFFF,OutlineColour=&H000000,Outline=2'" -c:a copy -y $OUTPUT_PATH
+    inputs: ["INPUT_FILE", "SUBTITLE_FILE"]
+    outputs: ["OUTPUT_FILE"]
+    output_path: "{{userId}}/{{pipelineId}}/{{runId}}/subtitled/{{baseFilename}}_subtitled.mp4"
+    editor:
+      output: "mp4"
+      preset: "medium"
+      selectedCode: "custom"
+    next_bucket: "public-processed"
+    keep: true
+
+render:
+  project_name: "subtitle-generation"
+  status: "queued"
+  public: false

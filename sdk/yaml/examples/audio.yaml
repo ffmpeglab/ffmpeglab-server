@@ -1,0 +1,107 @@
+# audio-pipeline.yaml
+name: "Audio Processing Pipeline"
+pipelineId: "audio-pipeline"
+runId:
+  mode: "deterministic"
+  template: "{baseFilename}"
+description: "Sequential audio processing: extract → normalize → waveform"
+version: "1.0.0"
+
+editor:
+  compressionLevel: 23
+  preset: "medium"
+  aspectRatio: "16:9"
+  framerate: 30
+  opacity: 1.0
+
+storage:
+  output_bucket: "audio-processed"
+  buckets:
+    - name: "audio-uploads"
+      public: false
+      allowed_mime_types: ["audio/mpeg", "audio/wav", "audio/flac", "video/mp4"]
+    - name: "audio-temp-1"
+      public: false
+      allowed_mime_types: ["audio/wav"]
+    - name: "audio-processed"
+      public: true
+      allowed_mime_types: ["audio/mpeg", "image/png"]
+
+  rls_policies:
+    - name: "Users can upload to their own audio folders"
+      operation: "INSERT"
+      role: "authenticated"
+      condition: |
+        (bucket_id IN ('audio-uploads', 'audio-temp-1', 'audio-processed')) AND
+        (storage.foldername(name))[1] = auth.uid()::text
+
+steps:
+  - id: "extract_audio"
+    trigger:
+      name: "handle_extract_audio"
+      event: "INSERT"
+      table: "storage.objects"
+      condition: |
+        NEW.bucket_id = 'audio-uploads' AND
+        NEW.name NOT LIKE '%.emptyFolderPlaceholder'
+    command: -i $MEDIA_1 -ac 1 -ar 16000 -vn -f wav -y $OUTPUT_PATH
+    inputs: ["INPUT_FILE"]
+    outputs: ["OUTPUT_FILE"]
+    output_path: "{{userId}}/{{pipelineId}}/{{runId}}/temp/{{baseFilename}}.wav"
+    editor:
+      output: "wav"
+      preset: "fast"
+      selectedCode: "custom"
+      width: 0
+      height: 0
+      length: 0
+      compressionLevel: 0
+    next_bucket: "audio-temp-1"
+    keep: false
+
+  - id: "normalize_loudness"
+    trigger:
+      name: "handle_normalize_audio"
+      event: "INSERT"
+      table: "storage.objects"
+      condition: |
+        NEW.bucket_id = 'audio-temp-1' AND
+        NEW.name NOT LIKE '%.emptyFolderPlaceholder'
+    command: -i $MEDIA_1 -af loudnorm=I=-16:LRA=11:TP=-1.5 -c:a libmp3lame -b:a 192k -f mp3 -y $OUTPUT_PATH
+    inputs: ["INPUT_FILE"]
+    outputs: ["OUTPUT_FILE"]
+    output_path: "{{userId}}/{{pipelineId}}/{{runId}}/podcast/{{baseFilename}}.mp3"
+    editor:
+      output: "mp3"
+      preset: "medium"
+      selectedCode: "custom"
+      compressionLevel: 23
+    next_bucket: "audio-processed"
+    keep: true   # MP3 is permanently stored
+
+  - id: "generate_waveform"
+    trigger:
+      name: "handle_waveform"
+      event: "INSERT"
+      table: "storage.objects"
+      condition: |
+        NEW.bucket_id = 'audio-processed' AND
+        NEW.name LIKE '%.mp3' AND
+        NEW.name NOT LIKE '%.emptyFolderPlaceholder'
+    command: -i $MEDIA_1 -filter_complex showwavespic=s=1200x200:colors=#FC6D26 -frames:v 1 -f image2 -y $OUTPUT_PATH
+    inputs: ["INPUT_FILE"]
+    outputs: ["OUTPUT_FILE"]
+    output_path: "{{userId}}/{{pipelineId}}/{{runId}}/waveforms/{{baseFilename}}.png"
+    editor:
+      output: "png"
+      preset: "medium"
+      selectedCode: "custom"
+      width: 1200
+      height: 200
+    next_bucket: "audio-processed"
+    keep: true   # PNG is also permanently stored
+
+render:
+  project_name: "audio-processing"
+  status: "queued"
+  public: false

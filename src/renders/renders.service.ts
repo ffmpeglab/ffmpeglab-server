@@ -68,12 +68,13 @@ export class RendersService {
     });
   }
 
-  async enqueRender(renderId: string, userId: string) {
+  async enqueRender(renderId: string, userId: string, bucket?: string) {
     const queueItem = await this.queue.add(
       'render',
       {
         renderId,
         userId,
+        bucket,
       },
       { headers: { retryCount: 1 } },
     );
