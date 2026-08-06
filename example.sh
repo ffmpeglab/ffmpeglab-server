@@ -1,4 +1,5 @@
-RENDER=$(curl -X POST https://api.ffmpeglab.com/renders \
+API_HOST=https://api.ffmpeglab.com
+RENDER=$(curl -X POST ${API_HOST}/renders \
   -H "Authorization: Bearer ${API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -32,12 +33,12 @@ RENDER_ID=$(echo "${RENDER}" | grep -o '"id":"[^"]*"' | head -1 | sed 's/"id":"\
 echo "RENDER_ID: ${RENDER_ID}"
 
 
-RUN=$(curl -X PUT https://api.ffmpeglab.com/renders/run \
+RUN=$(curl -X PUT $API_HOST/renders/run \
   -H "Authorization: Bearer ${API_KEY}" \
   -H "Content-Type: application/json" \
   -d "{\"id\": \"$RENDER_ID\"}")
 
-curl -X GET https://api.ffmpeglab.com/renders/${RENDER_ID} \
+curl -X GET $API_HOST/renders/${RENDER_ID} \
   -H "Authorization: Bearer ${API_KEY}" \
   -H "Content-Type: application/json"
 
@@ -45,7 +46,7 @@ echo '\n'
 
 sleep 3
 
-curl -X GET https://api.ffmpeglab.com/renders/${RENDER_ID} \
+curl -X GET $API_HOST/renders/${RENDER_ID} \
   -H "Authorization: Bearer ${API_KEY}" \
   -H "Content-Type: application/json"
 
@@ -53,7 +54,7 @@ echo '\n'
 
 sleep 5
 
-curl -X GET https://api.ffmpeglab.com/renders/${RENDER_ID} \
+curl -X GET $API_HOST/renders/${RENDER_ID} \
   -H "Authorization: Bearer ${API_KEY}" \
   -H "Content-Type: application/json"
 
