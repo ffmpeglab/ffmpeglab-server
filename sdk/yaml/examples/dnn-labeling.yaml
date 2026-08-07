@@ -1,0 +1,130 @@
+# labeling-pipeline.yaml
+name: "Video Labeling with DNN Filters"
+pipelineId: "video-labeling"
+runId:
+  mode: "deterministic"
+  template: "{baseFilename}"
+description: "Detect objects, faces, and scenes using FFmpeg DNN filters"
+version: "1.0.0"
+
+# Global editor defaults
+editor:
+  compressionLevel: 23
+  preset: "medium"
+  aspectRatio: "16:9"
+  framerate: 30
+  opacity: 1.0
+  output: "mp4"
+
+storage:
+  output_bucket: "public-processed"
+  buckets:
+    - name: "dnn-uploads"
+      public: false
+      allowed_mime_types:
+        - "video/mp4"
+        - "video/quicktime"
+        - "video/x-msvideo"
+        - "video/webm"
+        - "video/mpeg"
+    - name: "public-processed"
+      public: true
+      allowed_mime_types:
+        - "video/mp4"
+        - "application/json"
+
+  rls_policies:
+    - name: "Users can upload to their own folder"
+      operation: "INSERT"
+      role: "authenticated"
+      condition: |
+        bucket_id = 'private-uploads' AND
+        (storage.foldername(name))[1] = auth.uid()::text
+
+    - name: "Users can download from their own folder"
+      operation: "SELECT"
+      role: "authenticated"
+      condition: |
+        bucket_id = 'private-uploads' AND
+        (storage.foldername(name))[1] = auth.uid()::text
+
+    - name: "Service role can manage processed media"
+      operation: "ALL"
+      role: "service_role"
+      condition: |
+        bucket_id = 'public-processed'
+
+    - name: "Users can read their own processed media"
+      operation: "SELECT"
+      role: "authenticated"
+      condition: |
+        bucket_id = 'public-processed' AND
+        (storage.foldername(name))[1] = auth.uid()::text
+
+steps:
+  # Step 1: Object/Face Detection (dnn_detect)
+  - id: "detect_objects"
+    trigger:
+      name: "handle_detect"
+      event: "INSERT"
+      table: "storage.objects"
+      condition: |
+        NEW.bucket_id = 'dnn-uploads' AND
+        NEW.metadata->>'mimetype' LIKE 'video/%'
+    command: -i $MEDIA_1 -vf "dnn_detect=dnn_backend=$DNN_BACKEND:model=$DETECT_MODEL:input=data:output=detection_out:confidence=$DETECT_CONFIDENCE:labels=$DETECT_LABELS,showinfo" -f null -
+    inputs: ["INPUT_FILE"]
+    outputs: ["OUTPUT_FILE"]
+    output_path: "{{userId}}/{{pipelineId}}/{{runId}}/labels/{{baseFilename}}_detections.json"
+    editor:
+      output: "json"
+      preset: "medium"
+      selectedCode: "custom"
+    next_bucket: "private-uploads"
+    keep: false
+
+  # Step 2: Scene/Emotion Classification (dnn_classify)
+  - id: "classify_scenes"
+    trigger:
+      name: "handle_classify"
+      event: "INSERT"
+      table: "storage.objects"
+      condition: |
+        NEW.bucket_id = 'dnn-uploads' AND
+        NEW.name LIKE '%.json' AND
+        NEW.name NOT LIKE '%.emptyFolderPlaceholder'
+    command: -i $MEDIA_1 -vf "dnn_classify=dnn_backend=$DNN_BACKEND:model=$CLASSIFY_MODEL:input=data:output=$CLASSIFY_OUTPUT:confidence=$CLASSIFY_CONFIDENCE:labels=$CLASSIFY_LABELS,showinfo" -f null -y $OUTPUT_PATH
+    inputs: ["INPUT_FILE"]
+    outputs: ["OUTPUT_FILE"]
+    output_path: "{{userId}}/{{pipelineId}}/{{runId}}/labels/{{baseFilename}}_classifications.json"
+    editor:
+      output: "json"
+      preset: "medium"
+      selectedCode: "custom"
+    next_bucket: "private-uploads"
+    keep: false
+
+  # Step 3: Overlay bounding boxes on video
+  - id: "overlay_labels"
+    trigger:
+      name: "handle_overlay"
+      event: "INSERT"
+      table: "storage.objects"
+      condition: |
+        NEW.bucket_id = 'dnn-uploads' AND
+        NEW.name LIKE '%.json' AND
+        NEW.name NOT LIKE '%.emptyFolderPlaceholder'
+    command: -i $MEDIA_1 -vf "dnn_detect=dnn_backend=$DNN_BACKEND:model=$DETECT_MODEL:input=data:output=detection_out:confidence=$DETECT_CONFIDENCE:labels=$DETECT_LABELS,drawbox=x=1005:y=813:w=81:h=92:color=red" -c:v libx264 -crf 18 -y $OUTPUT_PATH
+    inputs: ["INPUT_FILE"]
+    outputs: ["OUTPUT_FILE"]
+    output_path: "{{userId}}/{{pipelineId}}/{{runId}}/labeled/{{baseFilename}}_labeled.mp4"
+    editor:
+      output: "mp4"
+      preset: "medium"
+      selectedCode: "custom"
+    next_bucket: "public-processed"
+    keep: true
+
+render:
+  project_name: "video-labeling"
+  status: "queued"
+  public: false

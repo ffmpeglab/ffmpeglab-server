@@ -16,7 +16,7 @@ import {
 import { genRenderCmd } from './util/genRenderCmd';
 import { getTotalTime } from './util/getTotalTime';
 import { processUserCode } from './util/processUserCode';
-
+import { parseCommand } from './util/parseCommand';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
 import { syncMedia } from './util/syncMedia';
@@ -47,7 +47,10 @@ export const execEncode = async (cmd: {
     const execCode =
       cmd.projectData.editor.selectedCode === CodeSelection.generated
         ? cmd.execCmd
-        : processUserCode(cmd.projectData.editor.code);
+        : parseCommand(
+            processUserCode(cmd.projectData.editor.code).join(' '),
+            cmd.assignedMedias,
+          );
     const exec = cmd.ffmpeg.exec(execCode, cmd.assignedMedias);
     console.info('processing', exec);
     await exec;

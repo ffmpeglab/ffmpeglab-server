@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 200 700 400" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;background:transparent;font-family:system-ui,-apple-system,sans-serif;">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#6b7280"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.15"/>
+    </filter>
+    <linearGradient id="startGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a2a4a"/>
+      <stop offset="100%" stop-color="#1a2a4a"/>
+    </linearGradient>
+    <linearGradient id="keepGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a3a2a"/>
+      <stop offset="100%" stop-color="#1a3a2a"/>
+    </linearGradient>
+    <linearGradient id="templateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3a2a1a"/>
+      <stop offset="100%" stop-color="#3a2a1a"/>
+    </linearGradient>
+    <linearGradient id="sourceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a3a"/>
+      <stop offset="100%" stop-color="#1a1a3a"/>
+    </linearGradient>
+    <linearGradient id="waitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3a1a1a"/>
+      <stop offset="100%" stop-color="#3a1a1a"/>
+    </linearGradient>
+  </defs><path d="M300,400 Q350,355 400,310" fill="none" stroke="#6b7280" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)"/><rect x="305" y="331" width="90" height="24" rx="4" fill="#2d2d44" stroke="#6b7280" stroke-width="1.5" opacity="0.95"/><text x="350" y="347" text-anchor="middle" dominant-baseline="central" fill="#e5e7eb" font-size="11" font-weight="600">→ public-processed</text><path d="M300,400 Q350,445 400,490" fill="none" stroke="#6b7280" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)"/><rect x="305" y="421" width="90" height="24" rx="4" fill="#2d2d44" stroke="#6b7280" stroke-width="1.5" opacity="0.95"/><text x="350" y="437" text-anchor="middle" dominant-baseline="central" fill="#e5e7eb" font-size="11" font-weight="600">→ public-processed</text><rect x="60" y="350" width="240" height="100" rx="10" fill="url(#startGrad)" stroke="#4a8aef" stroke-width="2"  filter="url(#shadow)"/><text x="180" y="368" text-anchor="middle" dominant-baseline="central" fill="#90caf9" font-size="12" font-weight="600">📤 upscale-uploads</text><rect x="400" y="260" width="240" height="100" rx="10" fill="url(#keepGrad)" stroke="#4a8a5a" stroke-width="2"  filter="url(#shadow)"/><text x="520" y="278" text-anchor="middle" dominant-baseline="central" fill="#a5d6a7" font-size="12" font-weight="600">ai_upscale</text><rect x="594" y="268" width="36" height="18" rx="4" fill="#4a8a5a" opacity="0.9"/><text x="612" y="277" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="8" font-weight="bold">KEEP</text><text x="520" y="302" text-anchor="middle" dominant-baseline="central" fill="#a5d6a7" font-size="9" font-family="monospace">📁 {userId}/ai-upscaling/{filename}/upsca…</text><text x="520" y="334" text-anchor="middle" dominant-baseline="central" fill="#e5e7eb" font-size="8">(slow)</text><rect x="400" y="440" width="240" height="100" rx="10" fill="url(#keepGrad)" stroke="#4a8a5a" stroke-width="2"  filter="url(#shadow)"/><text x="520" y="458" text-anchor="middle" dominant-baseline="central" fill="#a5d6a7" font-size="12" font-weight="600">bicubic_upscale</text><rect x="594" y="448" width="36" height="18" rx="4" fill="#4a8a5a" opacity="0.9"/><text x="612" y="457" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="8" font-weight="bold">KEEP</text><text x="520" y="482" text-anchor="middle" dominant-baseline="central" fill="#a5d6a7" font-size="9" font-family="monospace">📁 {userId}/ai-upscaling/{filename}/upsca…</text><text x="520" y="514" text-anchor="middle" dominant-baseline="central" fill="#e5e7eb" font-size="8">(slow)</text></svg>

@@ -1,0 +1,117 @@
+# ai-upscaling-pipeline.yaml
+name: "AI Upscaling Pipeline"
+pipelineId: "ai-upscaling"
+runId:
+  mode: "deterministic"
+  template: "{baseFilename}"
+description: "Automated AI upscaling using DNN models (SRCNN) and bicubic fallback"
+version: "1.0.0"
+
+# Global editor defaults
+editor:
+  compressionLevel: 23
+  preset: "medium"
+  aspectRatio: "16:9"
+  framerate: 30
+  opacity: 1.0
+  output: "mp4"
+
+storage:
+  output_bucket: "public-processed"
+  buckets:
+    - name: "upscale-uploads"
+      public: false
+      allowed_mime_types:
+        - "video/mp4"
+        - "video/quicktime"
+        - "video/x-msvideo"
+        - "video/webm"
+        - "video/mpeg"
+    - name: "public-processed"
+      public: true
+      allowed_mime_types:
+        - "video/mp4"
+
+  rls_policies:
+    - name: "Users can upload to their own folder"
+      operation: "INSERT"
+      role: "authenticated"
+      condition: |
+        bucket_id = 'upscale-uploads' AND
+        (storage.foldername(name))[1] = auth.uid()::text
+
+    - name: "Users can download from their own folder"
+      operation: "SELECT"
+      role: "authenticated"
+      condition: |
+        bucket_id = 'upscale-uploads' AND
+        (storage.foldername(name))[1] = auth.uid()::text
+
+    - name: "Public read access to processed media"
+      operation: "SELECT"
+      role: "anon"
+      condition: |
+        bucket_id = 'public-processed'
+
+    - name: "Service role can manage processed media"
+      operation: "ALL"
+      role: "service_role"
+      condition: |
+        bucket_id = 'public-processed'
+
+    - name: "Users can read their own processed media"
+      operation: "SELECT"
+      role: "authenticated"
+      condition: |
+        bucket_id = 'public-processed' AND
+        (storage.foldername(name))[1] = auth.uid()::text
+
+steps:
+  # Step 1: AI Upscaling with DNN (SRCNN)
+  - id: "ai_upscale"
+    trigger:
+      name: "handle_ai_upscale"
+      event: "INSERT"
+      table: "storage.objects"
+      condition: |
+        NEW.bucket_id = 'upscale-uploads' AND
+        NEW.metadata->>'mimetype' LIKE 'video/%'
+    command: -i $MEDIA_1 -vf "format=rgb24,dnn_processing=model=$DNN_MODEL_PATH:input=x:output=y:dnn_backend=$DNN_BACKEND,scale=iw*$UPSCALE_FACTOR:ih*$UPSCALE_FACTOR" -c:v libx264 -crf 18 -pix_fmt yuv420p -y $OUTPUT_PATH
+    inputs: ["INPUT_FILE"]
+    outputs: ["OUTPUT_FILE"]
+    output_path: "{{userId}}/{{pipelineId}}/{{runId}}/upscaled/{{baseFilename}}_AI_${UPSCALE_FACTOR}x.mp4"
+    editor:
+      output: "mp4"
+      preset: "slow"
+      selectedCode: "custom"
+      width: 0
+      height: 0
+      compressionLevel: 18
+    keep: true
+
+  # Step 2: Bicubic Upscaling (Fallback)
+  - id: "bicubic_upscale"
+    trigger:
+      name: "handle_bicubic_upscale"
+      event: "INSERT"
+      table: "storage.objects"
+      condition: |
+        NEW.bucket_id = 'upscale-uploads' AND
+        NEW.metadata->>'mimetype' LIKE 'video/%'
+    command: -i $MEDIA_1 -vf "scale=iw*$UPSCALE_FACTOR:ih*$UPSCALE_FACTOR:flags=lanczos,unsharp=5:5:1.5:5:5:0.5" -c:v libx264 -crf 18 -pix_fmt yuv420p -y $OUTPUT_PATH
+    inputs: ["INPUT_FILE"]
+    outputs: ["OUTPUT_FILE"]
+    output_path: "{{userId}}/{{pipelineId}}/{{runId}}/upscaled/{{baseFilename}}_bicubic_${UPSCALE_FACTOR}x.mp4"
+    editor:
+      output: "mp4"
+      preset: "slow"
+      selectedCode: "custom"
+      width: 0
+      height: 0
+      compressionLevel: 18
+    keep: true
+
+render:
+  project_name: "upscaling"
+  status: "queued"
+  public: false
