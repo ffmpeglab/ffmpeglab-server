@@ -27,6 +27,20 @@ It leverages the existing `render` table and `render` pgmq queue from the FFmpeg
 - **Reusable templates** – reference existing renders or pipelines as templates.
 - **Multi‑file triggers** – define pipelines that wait for a set of files to be present before triggering.
 
+## Examples
+
+The `examples/` directory contains ready‑to‑use pipeline templates and their corresponding SVG graphs. Each example demonstrates a different media processing scenario.
+
+| Pipeline | YAML | SVG Graph | Description |
+|----------|------|-----------|-------------|
+| **Audio Processing** | [`audio.yaml`](./examples/audio.yaml) | <img src="./examples/audio.svg" width="200"> | Sequential podcast audio processing: extract WAV → normalize → waveform PNG. |
+| **Video Onboarding** | [`video.yaml`](./examples/video.yaml) | <img src="./examples/video.svg" width="200"> | Parallel video & image processing: thumbnails + transcodes. |
+| **Whisper Subtitles** | [`whisper-subtitles.yaml`](./examples/whisper-subtitles.yaml) | <img src="./examples/whisper-subtitles.svg" width="200"> | AI subtitle generation with Whisper: extract audio → transcribe → burn subtitles. |
+| **DNN Labeling** | [`dnn-labeling.yaml`](./examples/dnn-labeling.yaml) | <img src="./examples/dnn-labeling.svg" width="200"> | Object detection & scene classification using FFmpeg DNN filters. |
+| **DNN Upscaling** | [`dnn-upscale.yaml`](./examples/dnn-upscale.yaml) | <img src="./examples/dnn-upscale.svg" width="200"> | Super‑resolution AI upscaling (SRCNN) + bicubic fallback. |
+
+To generate these graphs yourself, run the transpiler with the `--svg` flag on any YAML file.
+
 ## Installation
 
 The transpiler is a single TypeScript file that runs with **Deno**. It has zero external dependencies (except the YAML parser from the Deno standard library and the SVG generator).
@@ -50,7 +64,7 @@ deno run --allow-read --allow-write transpiler.ts <path-to-yaml> [output-dir] [-
 ### Example
 
 ```bash
-deno run --allow-read --allow-write transpiler.ts video-pipeline.yaml ./supabase/migrations --svg
+deno run --allow-read --allow-write transpiler.ts examples/video.yaml ./supabase/migrations --svg
 ```
 
 ### Output

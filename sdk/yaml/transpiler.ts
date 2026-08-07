@@ -1,7 +1,7 @@
 // transpiler.ts – FFmpegLab YAML → Supabase Migration (runId in render.project, no created_at)
 // Deno ready: deno run --allow-read --allow-write transpiler.ts <yaml> [output-dir]
 
-import { parse as parseYaml } from "https://deno.land/std@0.224.0/yaml/mod.ts";
+import { parse as parseYaml } from "yaml";
 import { pipelineToSVG } from "./svg.ts";
 
 // ----------------------------------------------------------------------------
