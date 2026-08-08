@@ -1,0 +1,182 @@
+# One release == one tenant == one Supabase project. Supabase is not deployed here.
+
+tenant:
+  name: ""
+
+image:
+  repository: ffmpeglab/server
+  tag: "0.3.18"
+  digest: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Passed through verbatim; no variable name is hardcoded in the templates.
+env: {}
+  # DB_PORT: "5432"
+  # S3_REGION: "us-east-1"
+  # DOCUMENT_DIRECTORY: /tmp/ffmpeglab
+
+# Secret with the tenant's credentials, normally produced from Vault.
+existingSecret: ""
+
+# Local testing only.
+secret:
+  create: false
+  data: {}
+    # DB_HOST: db.example.internal
+    # DB_PASSWORD: change-me
+
+# Each pod opens ~4 DB connections and the pooler caps a project at 15 in
+# session mode, so old+new side by side during a rollout exhausts it.
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 0
+    maxUnavailable: 1
+
+# The app exits rather than retries when the database hostname does not resolve,
+# so hold pods back until cluster DNS answers for it.
+dnsWait:
+  enabled: true
+  hostFrom: DB_HOST
+  image: busybox:1.36
+  attempts: 60
+  intervalSeconds: 2
+
+# Where renders are written. Must match the app's document directory.
+#
+# The render step writes its output here and the file step reads it back from
+# the same path — the `./tmp` bind mount shared by both runners in
+# docker-compose. Splitting them across pods needs the same directory in both,
+# so the claim has to be ReadWriteMany; a single-node cluster will also accept
+# ReadWriteOnce.
+#
+# With persistence off the directory is an emptyDir, which is private to each
+# pod. That only works when one process does both steps — see the `worker`
+# component below.
+documentDir:
+  mountPath: /tmp/ffmpeglab
+  persistence:
+    enabled: true
+    existingClaim: ""
+    accessModes:
+      - ReadWriteMany
+    size: 10Gi
+    storageClass: ""
+  # emptyDir settings, used when persistence is off
+  sizeLimit: 10Gi
+  medium: ""
+
+api:
+  enabled: true
+  replicaCount: 1
+  env: {}
+  containerPort: 3000
+  service:
+    type: ClusterIP
+    port: 3000
+    annotations: {}
+  probes:
+    enabled: true
+    path: /
+    initialDelaySeconds: 20
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 6
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+
+# Separate runners, as in docker-compose. Both mount the document directory:
+# render writes the output there, file picks it up and uploads it.
+render:
+  enabled: true
+  replicaCount: 1
+  env:
+    IS_RENDER_RUNNER: "true"
+  mountDocumentDir: true
+  resources:
+    requests:
+      cpu: "1"
+      memory: 1Gi
+    limits:
+      cpu: "4"
+      memory: 4Gi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+
+file:
+  enabled: true
+  replicaCount: 1
+  env:
+    IS_FILE_RUNNER: "true"
+  mountDocumentDir: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+
+# Render and file in one process, sharing an emptyDir instead of a claim. For
+# clusters with no ReadWriteMany storage. Turn `render` and `file` off if you
+# enable this.
+worker:
+  enabled: false
+  replicaCount: 1
+  env:
+    IS_RENDER_RUNNER: "true"
+    IS_FILE_RUNNER: "true"
+  mountDocumentDir: true
+  resources:
+    requests:
+      cpu: "1"
+      memory: 1Gi
+    limits:
+      cpu: "4"
+      memory: 4Gi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+
+logs:
+  enabled: true
+  replicaCount: 1
+  env:
+    IS_LOGS_RUNNER: "true"
+  mountDocumentDir: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+serviceAccount:
+  create: false
+  name: ""
+  annotations: {}
