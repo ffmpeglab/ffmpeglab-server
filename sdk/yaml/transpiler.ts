@@ -1,7 +1,7 @@
-// transpiler.ts – FFmpegLab YAML → Supabase Migration (runId in render.project, no created_at)
-// Deno ready: deno run --allow-read --allow-write transpiler.ts <yaml> [output-dir]
+// transpiler.ts – FFmpegLab YAML → Supabase Migration (with webhook support)
+// Deno ready: deno run --allow-read --allow-write transpiler.ts <yaml> [output-dir] [--svg]
 
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml } from "https://deno.land/std@0.224.0/yaml/mod.ts";
 import { pipelineToSVG } from "./svg.ts";
 
 // ----------------------------------------------------------------------------
@@ -78,6 +78,13 @@ interface RunIdConfig {
   template?: string;
 }
 
+interface WebhookConfig {
+  url: string;
+  method?: string;
+  headers?: Record<string, string>;
+  payload?: string;
+}
+
 interface Config {
   name: string;
   description?: string;
@@ -88,6 +95,19 @@ interface Config {
   steps: Step[];
   render: RenderConfig;
   editor?: EditorConfig;
+  webhook?: WebhookConfig;
+}
+
+// ----------------------------------------------------------------------------
+// HELPERS
+// ----------------------------------------------------------------------------
+
+function sanitizeIdentifier(id: string): string {
+  return id.replace(/[^a-zA-Z0-9_]/g, '_');
+}
+
+function escapeSqlString(str: string): string {
+  return str.replace(/'/g, "''");
 }
 
 // ----------------------------------------------------------------------------
@@ -124,14 +144,6 @@ function parseYAML(text: string): Config {
     }
   }
   return data as Config;
-}
-
-// ----------------------------------------------------------------------------
-// HELPERS
-// ----------------------------------------------------------------------------
-
-function escapeSqlString(str: string): string {
-  return str.replace(/'/g, "''");
 }
 
 function buildPipelineJson(config: Config): string {
@@ -222,6 +234,9 @@ function generateUpMigration(config: Config): string {
   const runIdExpression = buildRunIdExpression(config);
   const firstStepId = steps[0]?.id;
 
+  // Sanitize pipelineId for SQL identifiers
+  const sqlId = sanitizeIdentifier(pipelineId);
+
   const lines: string[] = [];
 
   lines.push("-- ============================================================");
@@ -230,7 +245,9 @@ function generateUpMigration(config: Config): string {
   lines.push("-- ============================================================");
   lines.push("");
   lines.push("BEGIN;");
+  lines.push("");
 
+  // 1. Create storage buckets (idempotent)
   if (storage.buckets.length > 0) {
     lines.push("-- Create storage buckets (idempotent)");
     const bucketValues = storage.buckets
@@ -248,6 +265,7 @@ ON CONFLICT (id) DO NOTHING;`);
     lines.push("");
   }
 
+  // 2. RLS policies (drop & recreate)
   if (storage.rls_policies.length > 0) {
     lines.push("-- RLS policies for storage.objects");
     for (const policy of storage.rls_policies) {
@@ -265,7 +283,7 @@ ON CONFLICT (id) DO NOTHING;`);
         if (policy.condition) {
           usingPart = `USING (${policy.condition})`;
         }
-      } else {
+      } else { // UPDATE or ALL
         if (policy.condition) {
           usingPart = `USING (${policy.condition})`;
           checkPart = `WITH CHECK (${policy.condition})`;
@@ -284,6 +302,7 @@ ON CONFLICT (id) DO NOTHING;`);
     lines.push("");
   }
 
+  // 3. Step trigger functions
   const pipelineJson = buildPipelineJson(config);
   const globalEditorJson = buildGlobalEditorJson(config);
   const renderStatus = render.status;
@@ -321,6 +340,7 @@ ON CONFLICT (id) DO NOTHING;`);
   FROM render
   WHERE (data::jsonb)->'layers'->0->'media'->0->>'bucket' = NEW.bucket_id
     AND (data::jsonb)->'layers'->0->'media'->0->>'key' = NEW.name
+  ORDER BY created_at DESC
   LIMIT 1;
   IF v_run_id IS NULL THEN
     v_run_id := ${runIdExpression};
@@ -456,6 +476,53 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, storage;`);
     lines.push("");
   }
 
+  // 4. Webhook trigger (if configured)
+  if (config.webhook) {
+    const { url, method = "POST", headers = {}, payload = '{}' } = config.webhook;
+    const headersJson = JSON.stringify(headers);
+    const escapedPayload = payload.replace(/'/g, "''");
+
+    lines.push(`-- Webhook trigger for pipeline: ${pipelineId}`);
+    lines.push(`DROP FUNCTION IF EXISTS send_webhook_on_complete_${sqlId}() CASCADE;`);
+    lines.push(`CREATE OR REPLACE FUNCTION send_webhook_on_complete_${sqlId}() RETURNS TRIGGER AS $$
+DECLARE
+  v_payload TEXT;
+  v_url TEXT := '${url}';
+  v_method TEXT := '${method}';
+  v_headers JSONB := '${headersJson}'::jsonb;
+BEGIN
+  IF NEW.status = 'done' AND NEW.project = '${pipelineId}' AND OLD.status <> 'done' THEN
+    -- Replace placeholders in payload
+    v_payload := '${escapedPayload}';
+    v_payload := replace(v_payload, '{{renderId}}', NEW.id::text);
+    v_payload := replace(v_payload, '{{status}}', NEW.status);
+    v_payload := replace(v_payload, '{{project}}', NEW.project);
+    v_payload := replace(v_payload, '{{userId}}', NEW.user_id::text);
+    v_payload := replace(v_payload, '{{title}}', NEW.title);
+    v_payload := replace(v_payload, '{{progress}}', NEW.progress::text);
+    v_payload := replace(v_payload, '{{createdAt}}', NEW.created_at::text);
+    v_payload := replace(v_payload, '{{updatedAt}}', NEW.updated_at::text);
+    v_payload := replace(v_payload, '{{completedAt}}', COALESCE(NEW.updated_at::text, NOW()::text));
+    
+    PERFORM pg_net.http_post(
+      url := v_url,
+      headers := v_headers,
+      body := v_payload::jsonb
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;`);
+    lines.push("");
+
+    lines.push(`DROP TRIGGER IF EXISTS webhook_trigger_${sqlId} ON render;`);
+    lines.push(`CREATE TRIGGER webhook_trigger_${sqlId}
+  AFTER UPDATE ON render
+  FOR EACH ROW
+  EXECUTE FUNCTION send_webhook_on_complete_${sqlId}();`);
+    lines.push("");
+  }
+
   lines.push("COMMIT;");
   lines.push("");
 
@@ -463,7 +530,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, storage;`);
 }
 
 function generateDownMigration(config: Config): string {
-  const { storage, steps, name } = config;
+  const { storage, steps, name, pipelineId, webhook } = config;
+  const sqlId = sanitizeIdentifier(pipelineId);
 
   const lines: string[] = [];
 
@@ -472,7 +540,9 @@ function generateDownMigration(config: Config): string {
   lines.push("-- ============================================================");
   lines.push("");
   lines.push("BEGIN;");
+  lines.push("");
 
+  // Drop step triggers and functions
   for (const step of steps) {
     const triggerName = step.trigger.name;
     const table = step.trigger.table || "storage.objects";
@@ -480,6 +550,13 @@ function generateDownMigration(config: Config): string {
     lines.push(`DROP FUNCTION IF EXISTS ${triggerName}() CASCADE;`);
   }
 
+  // Drop webhook trigger if it exists
+  if (webhook) {
+    lines.push(`DROP TRIGGER IF EXISTS webhook_trigger_${sqlId} ON render;`);
+    lines.push(`DROP FUNCTION IF EXISTS send_webhook_on_complete_${sqlId}() CASCADE;`);
+  }
+
+  // Drop RLS policies
   if (storage.rls_policies.length > 0) {
     lines.push("-- Drop RLS policies");
     for (const policy of storage.rls_policies) {
@@ -552,7 +629,7 @@ if (import.meta.main) {
 
     const timestamp = new Date().toISOString().replace(/[-:.]/g, "").slice(0, 14);
     const baseName = config.name.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
-    const upPath = `${outputDir}/${timestamp}_${baseName}.sql`;
+    const upPath = `${outputDir}/${timestamp}_${baseName}_a_up.sql`;
     const downPath = `${outputDir}/${timestamp}_${baseName}_down.sql`;
 
     await Deno.writeTextFile(upPath, up);
@@ -563,7 +640,7 @@ if (import.meta.main) {
     console.log(`   DOWN: ${downPath}`);
 
     if (generateSvg) {
-      const svg = pipelineToSVG(config, {theme: 'dark', background:'transparent'});
+      const svg = pipelineToSVG(config, {theme:'dark',background:"transparent"});
       const svgPath = `${outputDir}/${timestamp}_${baseName}.svg`;
       await Deno.writeTextFile(svgPath, svg);
       console.log(`   SVG:  ${svgPath}`);
