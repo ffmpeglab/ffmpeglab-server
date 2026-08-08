@@ -2,24 +2,32 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class LogPiece {
+export class Pipeline {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty()
   id: string;
 
   @Column()
   @ApiProperty()
-  date: Date;
+  title: string;
 
   @Column()
   @ApiProperty()
-  logs: string;
-
-  @Column({ type: 'uuid' })
-  @ApiProperty()
-  render: string;
+  status: string;
 
   @Column({ type: 'uuid' })
   @ApiProperty()
   user_id: string;
+
+  @Column()
+  @ApiProperty()
+  downsql: string;
+
+  @Column()
+  @ApiProperty()
+  upsql: string;
+
+  @Column()
+  @ApiProperty()
+  yml: string;
 }

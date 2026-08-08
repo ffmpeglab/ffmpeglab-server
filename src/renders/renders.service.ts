@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InjectQueue, PgmqQueue } from 'nestjs-pgmq';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { Render } from '../model/render.entity';
 import { MinimalMedia, RenderData } from '../types';
 import { config } from '../config';
@@ -59,12 +59,17 @@ export class RendersService {
     return await this.rendersRepository.findOneBy({ id: renderId });
   }
 
-  async appendLogs(renderId: string, logs: string, userId: string) {
+  async appendLogs(
+    renderId: string,
+    logs: string,
+    userId: string,
+    date: string,
+  ) {
     return await this.logRepository.insert({
       logs,
       render: renderId,
       user_id: userId,
-      date: new Date().toISOString(),
+      date,
     });
   }
 
@@ -80,5 +85,22 @@ export class RendersService {
     );
     await this.updateRenderStatus(renderId, 'queue');
     return queueItem;
+  }
+
+  async getRenderLogs(
+    renderId: string,
+    userId: string,
+    from: string,
+    direction: 'ASC' | 'DESC',
+  ) {
+    const logs = await this.logRepository.find({
+      where: {
+        render: renderId,
+        user_id: userId,
+        date: MoreThan(new Date(from)),
+      },
+      order: { date: { direction: direction || 'ASC' } },
+    });
+    return { logs };
   }
 }
